@@ -4,7 +4,7 @@
 # Sync
 
 # 上游仓库与分支
-INPUT_UPSTREAM_REPOSITORY=Hyy2001X/AutoBuild-Actions-Template
+INPUT_UPSTREAM_REPOSITORY=Hyy2001X/AutoBuild-Actions
 INPUT_UPSTREAM_BRANCH=master
 
 # 需要文件的同步列表, 按需修改
@@ -13,6 +13,8 @@ Sync_List=(
 	# Configs/*
 	CustomFiles/Depends/*
 	CustomFiles/Patches/*
+	CustomFiles/d-team_newifi-d2_mac80211.patch
+	CustomFiles/d-team_newifi-d2_system
 	# Scripts/AutoBuild_DiyScript.sh
 	# Scripts/Sync.sh
 	Scripts/AutoBuild_Function.sh
