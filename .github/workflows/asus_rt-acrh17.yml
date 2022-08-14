@@ -4,7 +4,7 @@
 #   Author: Hyy2001X                                      #
 ###########################################################
 
-name: asus_rt-acrh17
+name: ASUS RT-ACRH17
 
 ### 以下内容请保持不变 ( 请修改下方的 [环境变量设置] )
 on:
@@ -47,7 +47,7 @@ env:
 # 删除无用文件以增加编译空间
   DELETE_USELESS_FILES: true
 # 删除早期的 workflow 任务
-  DELETE_OLD_WORKFLOW: true
+  DELETE_OLD_WORKFLOW: false
 ### 结束
 
 jobs:
