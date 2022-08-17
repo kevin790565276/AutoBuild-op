@@ -39,7 +39,7 @@ env:
 # 源码仓库:分支
   DEFAULT_SOURCE: xiaowansm5/lede:master
 # 上传固件到 Github Releases
-  UPLOAD_RELEASES: false
+  UPLOAD_RELEASES: true
 # 生成固件
   UPLOAD_CONFIG: false
   UPLOAD_BIN_DIR: false
@@ -195,6 +195,28 @@ jobs:
         file_glob: true
         tag: AutoUpdate
         overwrite: true
+        
+    - name: Upload firmware directory
+      uses: actions/upload-artifact@main
+      if: env.UPLOAD_FIRMWARE == 'true' && steps.organize.outputs.status == 'success' && !cancelled()
+      with:
+        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+        path: ${{ env.FIRMWARE }}
+
+    - name: Create release
+      id: release
+      uses: ncipollo/release-action@v1
+      with:
+        name: R${{ env.DATE }} for ${{ env.PRODUCT_NAME }}
+        allowUpdates: true
+        tag: ${{ env.FILE_NAME }}
+        commit: master
+        token: ${{ secrets.RELEASES_TOKEN }}
+        body: |
+          默认IP：192.168.5.1 默认密码：password
+          当前使用版本:【编译前的最后一次[➦主源码](https://github.com/coolsnowwolf/lede)更新记录】
+          ${{ env.useVersionInfo }}
+        artifacts: ${{ env.FIRMWARE }}/*
         
     - name: Download Github Release API
       if: env.UPLOAD_RELEASES == 'true' && env.Result == 'true' && !cancelled()
