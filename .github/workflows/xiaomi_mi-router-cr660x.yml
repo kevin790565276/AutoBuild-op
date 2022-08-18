@@ -42,8 +42,8 @@ env:
   UPLOAD_RELEASES: true
 # 生成固件
   UPLOAD_CONFIG: false
-  UPLOAD_BIN_DIR: false
-  UPLOAD_FIRMWARE: false
+  UPLOAD_BIN_DIR: true
+  UPLOAD_FIRMWARE: true
 # 上传固件到 Github Artifacts
   UPLOAD_ARTIFACTS: false
 # 上传 bin 文件夹到 Github Artifacts
@@ -203,26 +203,6 @@ jobs:
         name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE }}
 
-    - name: Create release
-      id: release
-      uses: ncipollo/release-action@v1
-      with:
-        name: R${{ env.DATE }} for ${{ env.PRODUCT_NAME }}
-        allowUpdates: true
-        tag: ${{ env.FILE_NAME }}
-        commit: master
-        token: ${{ secrets.RELEASES_TOKEN }}
-        body: |
-          默认密码：password
-          当前使用版本:【编译前的最后一次[➦主源码](https://github.com/coolsnowwolf/lede)更新记录】
-          ${{ env.useVersionInfo }}
-        artifacts: ${{ env.FIRMWARE }}/*
-        
-    - name: Download Github Release API
-      if: env.UPLOAD_RELEASES == 'true' && env.Result == 'true' && !cancelled()
-      run: |
-        wget https://api.github.com/repos/${{github.repository}}/releases/tags/AutoUpdate -O API
-        
     - name: Upload API to Github Release
       if: env.UPLOAD_RELEASES == 'true' && env.Result == 'true' && !cancelled()
       uses: svenstaro/upload-release-action@v2
