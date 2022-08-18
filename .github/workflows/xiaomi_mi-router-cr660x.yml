@@ -40,14 +40,10 @@ env:
   DEFAULT_SOURCE: xiaowansm5/lede:master
 # 上传固件到 Github Releases
   UPLOAD_RELEASES: true
-# 生成固件
-  UPLOAD_CONFIG: false
-  UPLOAD_BIN_DIR: true
-  UPLOAD_FIRMWARE: true
 # 上传固件到 Github Artifacts
-  UPLOAD_ARTIFACTS: false
+  UPLOAD_ARTIFACTS: true
 # 上传 bin 文件夹到 Github Artifacts
-  UPLOAD_BIN_ARTIFACTS: false
+  UPLOAD_BIN_ARTIFACTS: true
 # 删除无用文件以增加编译空间
   DELETE_USELESS_FILES: true
 # 删除早期的 workflow 任务
@@ -196,56 +192,11 @@ jobs:
         tag: AutoUpdate
         overwrite: true
         
-    - name: Upload firmware directory
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_FIRMWARE == 'true' && steps.organize.outputs.status == 'success' && !cancelled()
-      with:
-        name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: ${{ env.FIRMWARE }}
-
-    - name: Update config directory
-      if: steps.organize.outputs.status == 'success' && env.UPLOAD_CONFIG == 'true'
+    - name: Download Github Release API
+      if: env.UPLOAD_RELEASES == 'true' && env.Result == 'true' && !cancelled()
       run: |
-        cd $GITHUB_WORKSPACE/openwrt
-        git clone -b master https://github.com/${{github.repository}}.git repo
-        #git clone --depth 1 https://github.com/${{github.repository}} -b master repo
-        cd repo
-        chk1=`cksum ${CONFIG_FILE} | awk -F" " '{print $1}'`
-        chk2=`cksum $GITHUB_WORKSPACE/openwrt/.config | awk -F" " '{print $1}'`
-        if [ $chk1 -eq $chk2 ]; then
-          echo "File is identical"
-        else
-          echo "File is not identical"
-          rm -rf ${CONFIG_FILE}.*
-          cp -Rf $GITHUB_WORKSPACE/openwrt/.config ${CONFIG_FILE}.${{ env.DATE1 }}
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git add .
-          git commit -m "update.config"
-          git push --force "https://${{ secrets.RELEASES_TOKEN }}@github.com/${{github.repository}}" HEAD:master
-        fi
-
-    - name: Upload bin directory
-      uses: actions/upload-artifact@master
-      if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
-      with:
-        name: OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
-        path: openwrt/bin/targets/*/*/bin.tar.gz
-
-    - name: Create release
-      id: release
-      uses: ncipollo/release-action@v1
-      with:
-        name: R${{ env.DATE }} for ${{ env.PRODUCT_NAME }}
-        allowUpdates: true
-        tag: ${{ env.FILE_NAME }}
-        commit: master
-        token: ${{ secrets.RELEASES_TOKEN }}
-        body: |
-          默认IP：192.168.2.1 默认密码：password
-          当前使用版本:【编译前的最后一次[➦主源码](https://github.com/coolsnowwolf/lede)更新记录】
-          ${{ env.useVersionInfo }}
-        artifacts: ${{ env.FIRMWARE }}/*
+        wget https://api.github.com/repos/${{github.repository}}/releases/tags/AutoUpdate -O API
+        
     - name: Upload API to Github Release
       if: env.UPLOAD_RELEASES == 'true' && env.Result == 'true' && !cancelled()
       uses: svenstaro/upload-release-action@v2
